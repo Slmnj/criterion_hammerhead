@@ -842,15 +842,21 @@ static int __cpuinit regulator_init(struct scalable *sc,
 	}
 
 	/*
-	 * Increment the L2 HFPLL regulator refcount if _this_ CPU's frequency
-	 * requires a corresponding target L2 frequency that needs the L2 to
-	 * run off of an HFPLL.
+	 * Vote for the L2 HFPLL regulators if _this_ CPU's frequency requires
+	 * a corresponding target L2 frequency that needs the L2 an HFPLL.
 	 */
-	if (drv.l2_freq_tbl[acpu_level->l2_level].speed.src == HFPLL)
-		l2_vreg_count++;
+	if (drv.l2_freq_tbl[acpu_level->l2_level].speed.src == HFPLL) {
+		ret = enable_l2_regulators();
+		if (IS_ERR_VALUE(ret)) {
+			dev_err(drv.dev, "Failed to enable L2 regulators\n");
+			goto err_l2_regs;
+		}
+	}
 
 	return 0;
 
+err_l2_regs:
+	regulator_disable(sc->vreg[VREG_CORE].reg);
 err_core_conf:
 	regulator_put(sc->vreg[VREG_CORE].reg);
 err_core_get:
