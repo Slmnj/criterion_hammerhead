@@ -1260,11 +1260,6 @@ struct ravg {
 
 struct sched_entity {
 	struct load_weight	load;		/* for load-balancing */
-	/*
-	 * Todo : Move ravg to 'struct task_struct', as this is common for both
-	 * real-time and non-realtime tasks
-	 */
-	struct ravg		ravg;
 	struct rb_node		run_node;
 	struct list_head	group_node;
 	unsigned int		on_rq;
@@ -1351,6 +1346,7 @@ struct task_struct {
 #ifdef CONFIG_CGROUP_SCHED
 	struct task_group *sched_task_group;
 #endif
+	struct ravg ravg;
 
 #ifdef CONFIG_PREEMPT_NOTIFIERS
 	/* list of struct preempt_notifier: */
@@ -2171,7 +2167,6 @@ extern unsigned int sysctl_sched_min_granularity;
 extern unsigned int sysctl_sched_wakeup_granularity;
 extern unsigned int sysctl_sched_child_runs_first;
 extern unsigned int sysctl_sched_wake_to_idle;
-extern unsigned int sysctl_sched_ravg_window;
 extern unsigned int sysctl_sched_wakeup_load_threshold;
 
 enum sched_tunable_scaling {
