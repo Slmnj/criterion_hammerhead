@@ -642,7 +642,7 @@ static struct cntry_locales_custom wifi_translate_custom_table[] = {
 	{"US", "Q2", 57},
 };
 
-static void *bcm_wifi_get_country_code(char *ccode)
+static void *bcm_wifi_get_country_code(char *ccode, u32 flags)
 {
 	int size, i;
 	static struct cntry_locales_custom country_code;
