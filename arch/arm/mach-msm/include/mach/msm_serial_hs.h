@@ -32,6 +32,7 @@
  * @uart_rfr_gpio: GPIO number for UART RFR Line.
  * @bam_tx_ep_pipe_index : BAM TX Endpoint Pipe Index for HSUART
  * @bam_tx_ep_pipe_index : BAM RX Endpoint Pipe Index for HSUART
+ * @obs: Flag for out of band sleep usage
  */
 struct msm_serial_hs_platform_data {
 	int wakeup_irq;  /* wakeup irq */
@@ -46,6 +47,7 @@ struct msm_serial_hs_platform_data {
 	int uart_rfr_gpio;
 	unsigned bam_tx_ep_pipe_index;
 	unsigned bam_rx_ep_pipe_index;
+	bool obs;
 };
 
 unsigned int msm_hs_tx_empty(struct uart_port *uport);
