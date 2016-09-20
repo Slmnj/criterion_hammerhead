@@ -615,8 +615,8 @@ static int alloc_tx_buffer(struct eth_dev *dev)
 		if (!req->buf)
 			req->buf = kmalloc(dev->tx_req_bufsize,
 						GFP_ATOMIC);
-			if (!req->buf)
-				goto free_buf;
+		if (!req->buf)
+			goto free_buf;
 	}
 	return 0;
 
