@@ -399,9 +399,9 @@ int bcmsdh_oob_intr_register(bcmsdh_info_t *bcmsdh, bcmsdh_cb_fn_t oob_irq_handl
 		return err;
 	}
 
-		err = enable_irq_wake(bcmsdh_osinfo->oob_irq_num);
-		if (!err)
-			bcmsdh_osinfo->oob_irq_wake_enabled = TRUE;
+	err = enable_irq_wake(bcmsdh_osinfo->oob_irq_num);
+	if (!err)
+		bcmsdh_osinfo->oob_irq_wake_enabled = TRUE;
 	bcmsdh_osinfo->oob_irq_enabled = TRUE;
 	bcmsdh_osinfo->oob_irq_registered = TRUE;
 	return err;
