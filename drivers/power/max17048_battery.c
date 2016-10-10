@@ -391,7 +391,7 @@ static void max17048_work(struct work_struct *work)
 				&chip->monitor_work,
 				msecs_to_jiffies(chip->poll_interval_ms));
 	} else {
-		pr_info("%s: rsoc=0x%04X rvcell=0x%04X soc=%d"\
+		pr_debug("%s: rsoc=0x%04X rvcell=0x%04X soc=%d"\
 			" v_mv=%d i_ua=%d t=%d\n", __func__,
 				chip->soc, chip->vcell,
 				chip->capacity_level, chip->voltage,
