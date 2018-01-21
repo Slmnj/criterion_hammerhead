@@ -627,7 +627,7 @@ void user_ion_free(struct ion_client *client, struct ion_handle *handle)
 		WARN(1, "%s: invalid handle passed to free.\n", __func__);
 		return;
 	}
-	if (!handle->user_ref_count > 0) {
+	if (handle->user_ref_count == 0) {
 		mutex_unlock(&client->lock);
 		WARN(1, "%s: User does not have access!\n", __func__);
 		return;
