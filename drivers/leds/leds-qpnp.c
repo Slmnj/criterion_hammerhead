@@ -434,6 +434,7 @@ struct kpdbl_config_data {
  *  rgb_config_data - rgb configuration data
  *  @pwm_cfg - device pwm configuration
  *  @enable - bits to enable led
+ *  @always_on - keep led active if off_ms is absent
  */
 struct rgb_config_data {
 	struct pwm_config_data	*pwm_cfg;
@@ -441,6 +442,7 @@ struct rgb_config_data {
 	u32	on_ms;
 	u32	off_ms;
 	u8	start;
+	u8	always_on;
 	u32	calibrated_max;
 };
 
@@ -1164,33 +1166,24 @@ static int rgb_duration_config(struct qpnp_led_data *led)
 	unsigned long off_ms = led->rgb_cfg->off_ms;
 	unsigned long ramp_step_ms, num_duty_pcts;
 	struct pwm_config_data  *pwm_cfg = led->rgb_cfg->pwm_cfg;
+	bool always_on = led->rgb_cfg->always_on ? !off_ms : false;
 
 	if (!on_ms) {
 		return -EINVAL;
-	} else if (!off_ms) {
-		/* implement always on
-		 * note:
-		 * rgb_on_off_ms_store() bumps on_ms=0 up to RGB_LED_MIN_MS
-		 * so setting ms on/off to 0/0 in /sys results in seeing
-		 * 50/0 by the time we get here
-		 */
-		ramp_step_ms = 1000;
-		num_duty_pcts = 1;
-		pwm_cfg->duty_cycles->duty_pcts[0] =
-			(led->cdev.brightness *
-			led->rgb_cfg->calibrated_max *
-			100) /
-			(RGB_MAX_LEVEL * RGB_MAX_LEVEL);
 	} else {
-		ramp_step_ms = on_ms / 20;
-		ramp_step_ms = (ramp_step_ms < 5)? 5 : ramp_step_ms;
-		num_duty_pcts = RGB_LED_RAMP_STEP_COUNT;
+		if (likely(!always_on)) {
+			ramp_step_ms = max_t(unsigned long, on_ms / 20, 5);
+			num_duty_pcts = RGB_LED_RAMP_STEP_COUNT;
+		} else {
+			ramp_step_ms = led->turn_off_delay_ms;
+			num_duty_pcts = 1;
+		}
 
 		for (i = 0; i < num_duty_pcts; i++) {
 			pwm_cfg->duty_cycles->duty_pcts[i] =
 				(led->cdev.brightness *
 				led->rgb_cfg->calibrated_max *
-				25 * (num_duty_pcts-i-1)) /
+				25 * (always_on ? 4 : (num_duty_pcts-i-1))) /
 				(RGB_MAX_LEVEL * RGB_MAX_LEVEL);
 		}
 	}
@@ -3012,6 +3005,45 @@ static ssize_t rgb_on_off_ms_store(struct device *dev,
 	return size;
 }
 
+static ssize_t rgb_always_on_show(struct device *dev,
+				  struct device_attribute *attr,
+				  char *buf)
+{
+	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+	struct qpnp_led_data *led =
+		container_of(led_cdev, struct qpnp_led_data, cdev);
+
+	return scnprintf(buf, 3, "%hhu\n", led->rgb_cfg->always_on);
+}
+
+static ssize_t rgb_always_on_store(struct device *dev,
+				   struct device_attribute *attr,
+				   const char *buf, size_t count)
+{
+	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+	struct qpnp_led_data *led =
+		container_of(led_cdev, struct qpnp_led_data, cdev);
+	u8 always_on;
+	int ret;
+
+	ret = kstrtou8(buf, 2, &always_on);
+	if (ret || always_on == led->rgb_cfg->always_on)
+		return -EINVAL;
+
+	led->rgb_cfg->always_on = always_on;
+
+	/* Take an effect immediately */
+	if (led->rgb_cfg->start) {
+		ret = qpnp_rgb_set(led);
+		if (IS_ERR_VALUE(ret)) {
+			dev_err(led_cdev->dev, "Unable to update RGB\n");
+			return ret;
+		}
+	}
+
+	return count;
+}
+
 static ssize_t rgb_start_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
@@ -3059,9 +3091,9 @@ static ssize_t rgb_start_store(struct device *dev,
 			if (ret < 0)
 				dev_err(led_array[i].cdev.dev,
 					"RGB set rgb start failed (%d)\n", ret);
-			/* Checking lut flags is used to glean if the led really was started */
 			if (!(led_array[i].rgb_cfg->pwm_cfg->lut_params.flags &
-						PM_PWM_LUT_RAMP_UP))
+			     (led_array[i].rgb_cfg->always_on ?
+			      PM_PWM_LUT_RAMP_UP : PM_PWM_LUT_LOOP)))
 				led_array[i].rgb_cfg->start = 0;
 			break;
 		default:
@@ -3073,6 +3105,7 @@ static ssize_t rgb_start_store(struct device *dev,
 }
 
 static DEVICE_ATTR(on_off_ms, 0644, rgb_on_off_ms_show, rgb_on_off_ms_store);
+static DEVICE_ATTR(always_on, 0644, rgb_always_on_show, rgb_always_on_store);
 static DEVICE_ATTR(rgb_start, 0644, rgb_start_show, rgb_start_store);
 
 static int qpnp_led_create_file(struct qpnp_led_data *led)
@@ -3096,11 +3129,20 @@ static int qpnp_led_create_file(struct qpnp_led_data *led)
 			return rc;
 		}
 
+		led->rgb_cfg->always_on = 1;
+		rc = device_create_file(led->cdev.dev, &dev_attr_always_on);
+		if (IS_ERR_VALUE(rc)) {
+			dev_err(led->cdev.dev, "Unable to create always_on\n");
+			device_remove_file(led->cdev.dev, &dev_attr_on_off_ms);
+			return rc;
+		}
+
 		led->rgb_cfg->start = 0;
 		rc = device_create_file(led->cdev.dev, &dev_attr_rgb_start);
 		if (rc) {
 			dev_err(led->cdev.dev,
 					"failed device_create_file(start)\n");
+			device_remove_file(led->cdev.dev, &dev_attr_always_on);
 			device_remove_file(led->cdev.dev, &dev_attr_on_off_ms);
 			return rc;
 		}
@@ -3116,6 +3158,7 @@ static int qpnp_led_create_file(struct qpnp_led_data *led)
 static void qpnp_led_remove_file(struct qpnp_led_data *led)
 {
 	device_remove_file(led->cdev.dev, &dev_attr_rgb_start);
+	device_remove_file(led->cdev.dev, &dev_attr_always_on);
 	device_remove_file(led->cdev.dev, &dev_attr_on_off_ms);
 }
 
