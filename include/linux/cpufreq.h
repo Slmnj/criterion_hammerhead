@@ -244,6 +244,11 @@ struct cpufreq_driver {
 	int	(*exit)		(struct cpufreq_policy *policy);
 	int	(*suspend)	(struct cpufreq_policy *policy);
 	int	(*resume)	(struct cpufreq_policy *policy);
+
+	/* sysfs voltage table */
+	ssize_t (*show_volt)	(char *buf);
+	ssize_t (*store_volt)	(const char *buf);
+
 	struct freq_attr	**attr;
 };
 

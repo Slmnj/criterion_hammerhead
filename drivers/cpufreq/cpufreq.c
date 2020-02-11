@@ -29,6 +29,7 @@
 #include <linux/completion.h>
 #include <linux/mutex.h>
 #include <linux/syscore_ops.h>
+#include <linux/err.h>
 
 #include <trace/events/power.h>
 
@@ -628,6 +629,30 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
 	return sprintf(buf, "%u\n", policy->cpuinfo.max_freq);
 }
 
+/**
+ * UV_mV_table - voltage-on-frequency table exposed by cpufreq driver.
+ */
+static ssize_t show_UV_mV_table(struct cpufreq_policy *policy, char *buf)
+{
+	if (IS_ERR_OR_NULL(cpufreq_driver->show_volt))
+		return scnprintf(buf, 15, "<unsupported>\n");
+
+	return cpufreq_driver->show_volt(buf);
+}
+
+static ssize_t store_UV_mV_table(struct cpufreq_policy *policy,
+				 const char *buf, size_t count)
+{
+	ssize_t ret;
+
+	if (IS_ERR_OR_NULL(cpufreq_driver->store_volt))
+		return -ENODEV;
+
+	ret = cpufreq_driver->store_volt(buf);
+
+	return IS_ERR_VALUE(ret) ? ret : count;
+}
+
 cpufreq_freq_attr_ro_perm(cpuinfo_cur_freq, 0400);
 cpufreq_freq_attr_ro(cpuinfo_min_freq);
 cpufreq_freq_attr_ro(cpuinfo_max_freq);
@@ -643,6 +668,7 @@ cpufreq_freq_attr_rw(scaling_min_freq);
 cpufreq_freq_attr_rw(scaling_max_freq);
 cpufreq_freq_attr_rw(scaling_governor);
 cpufreq_freq_attr_rw(scaling_setspeed);
+cpufreq_freq_attr_rw(UV_mV_table);
 
 static struct attribute *default_attrs[] = {
 	&cpuinfo_min_freq.attr,
@@ -657,6 +683,7 @@ static struct attribute *default_attrs[] = {
 	&scaling_driver.attr,
 	&scaling_available_governors.attr,
 	&scaling_setspeed.attr,
+	&UV_mV_table.attr,
 	NULL
 };
 

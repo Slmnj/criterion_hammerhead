@@ -317,6 +317,12 @@ struct acpuclk_platform_data {
 };
 
 /**
+ * CPUFreq->VDD interface - manually calibrate voltage-on-frequency.
+ */
+ssize_t acpuclk_krait_freq_get_vdd(char *buf);
+ssize_t acpuclk_krait_freq_set_vdd(const char *buf);
+
+/**
  * get_krait_bin_format_a - Populate bin_info from a 'Format A' pte_efuse
  */
 void __init get_krait_bin_format_a(void __iomem *base, struct bin_info *bin);

@@ -197,6 +197,7 @@ struct krait_power_vreg {
 	struct regulator_dev		*rdev;
 	const char			*name;
 	struct pmic_gang_vreg		*pvreg;
+	int				min_uV;
 	int				uV;
 	int				load;
 	enum krait_supply_mode		mode;
@@ -563,6 +564,28 @@ static unsigned int krait_power_get_optimum_mode(struct regulator_dev *rdev,
 	mutex_unlock(&pvreg->krait_power_vregs_lock);
 
 	return rc;
+}
+
+static int krait_power_get_current_limit(struct regulator_dev *rdev)
+{
+	struct krait_power_vreg *kvreg = rdev_get_drvdata(rdev);
+	/*
+	 * Mutex here is omitted as lower VDD limit is unlikely to change
+	 * during runtime. There is no need to steal locking time from more
+	 * important parts of regulator. Also, as current minimum limit is
+	 * used in CPUFreq->VDD interface in acpuclk implementation, mutex
+	 * here can lead to a huge stall because of a lot of concurrent calls
+	 * to show_UV_mV_table() at once.
+	 *
+	 * Just don't be dumb and save as much resources during the read of
+	 * an only value as possible, as this value is practically constant
+	 * (init_data does not change over time).
+	 *
+	 * Also note that, unlike the analogues in other regulators, this call
+	 * returns lower VDD limit, not the upper one, as the least is already
+	 * handled by the only user - acpuclk-krait.
+	 */
+	return kvreg->min_uV;
 }
 
 static int krait_power_set_mode(struct regulator_dev *rdev, unsigned int mode)
@@ -986,6 +1009,7 @@ static struct regulator_ops krait_power_ops = {
 	.get_voltage		= krait_power_get_voltage,
 	.set_voltage		= krait_power_set_voltage,
 	.get_optimum_mode	= krait_power_get_optimum_mode,
+	.get_current_limit	= krait_power_get_current_limit,
 	.set_mode		= krait_power_set_mode,
 	.get_mode		= krait_power_get_mode,
 	.enable			= krait_power_enable,
@@ -1260,6 +1284,7 @@ static int __devinit krait_power_probe(struct platform_device *pdev)
 	kvreg->desc.ops		= &krait_power_ops;
 	kvreg->desc.type	= REGULATOR_VOLTAGE;
 	kvreg->desc.owner	= THIS_MODULE;
+	kvreg->min_uV		= init_data->constraints.min_uV;
 	kvreg->uV		= CORE_VOLTAGE_BOOTUP;
 	kvreg->mode		= HS_MODE;
 	kvreg->desc.ops		= &krait_power_ops;
