@@ -40,7 +40,11 @@ struct msm_serial_hslite_platform_data {
 	int line;
 };
 
+#if defined(CONFIG_SERIAL_MSM_HSL)
 void msm_console_set_enable(bool enable);
+#else
+static inline void msm_console_set_enable(bool enable) { };
+#endif
 
 #endif
 
