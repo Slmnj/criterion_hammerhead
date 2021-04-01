@@ -42,6 +42,10 @@
 		};
 	};
 
+	qcom,mdss_dsi@fd922800 {
+		qcom,mdss-dsi-use-vdd-supply = <0>;
+	};
+
 	qcom,hdmi_tx@fd922100 {
 		status = "ok";
 	};
