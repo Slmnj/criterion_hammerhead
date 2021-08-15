@@ -213,7 +213,7 @@ err:
  *
  * Load the pm4 ucode from @start at @addr.
  */
-static inline int adreno_ringbuffer_load_pm4_ucode(struct kgsl_device *device,
+inline int adreno_ringbuffer_load_pm4_ucode(struct kgsl_device *device,
 			unsigned int start, unsigned int end, unsigned int addr)
 {
 	struct adreno_device *adreno_dev = ADRENO_DEVICE(device);
@@ -267,7 +267,7 @@ err:
  *
  * Load the pfp ucode from @start at @addr.
  */
-static inline int adreno_ringbuffer_load_pfp_ucode(struct kgsl_device *device,
+inline int adreno_ringbuffer_load_pfp_ucode(struct kgsl_device *device,
 			unsigned int start, unsigned int end, unsigned int addr)
 {
 	struct adreno_device *adreno_dev = ADRENO_DEVICE(device);
@@ -367,7 +367,7 @@ static int _ringbuffer_bootstrap_ucode(struct adreno_ringbuffer *rb,
  *
  * Setup ringbuffer for GPU.
  */
-static void _ringbuffer_setup_common(struct adreno_ringbuffer *rb)
+void _ringbuffer_setup_common(struct adreno_ringbuffer *rb)
 {
 	struct kgsl_device *device = rb->device;
 	struct adreno_device *adreno_dev = ADRENO_DEVICE(device);
@@ -419,7 +419,7 @@ static void _ringbuffer_setup_common(struct adreno_ringbuffer *rb)
  *
  * Start ringbuffer for GPU.
  */
-static int _ringbuffer_start_common(struct adreno_ringbuffer *rb)
+int _ringbuffer_start_common(struct adreno_ringbuffer *rb)
 {
 	int status;
 	struct kgsl_device *device = rb->device;

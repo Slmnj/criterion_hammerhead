@@ -342,7 +342,7 @@ static int sns_ocmem_wait(uint32_t sns_ocmem_status,
  *
  * @return 0 upon success; < 0 upon error
  */
-static int noinline
+static int
 sns_ocmem_send_msg(struct sns_ocmem_hdr_s *hdr, void const *msg_ptr)
 {
 	int rv = 0;
