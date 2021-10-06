@@ -32,7 +32,6 @@
 #include <mach/cpufreq.h>
 
 #include "acpuclock.h"
-#include "acpuclock-krait.h"
 
 struct cpufreq_work_struct {
 	struct work_struct work;
@@ -363,21 +362,6 @@ static int msm_cpufreq_resume(struct cpufreq_policy *policy)
 	return 0;
 }
 
-/*
- * Use acpuclk's generic calls to implement CPUFreq->VDD table. They can
- * be used to manually calibrate voltage-on-frequency and achieve better
- * power/stability balance on CPU.
- */
-static ssize_t msm_cpufreq_show_volt(char *buf)
-{
-	return acpuclk_krait_freq_get_vdd(buf);
-}
-
-static ssize_t msm_cpufreq_store_volt(const char *buf)
-{
-	return acpuclk_krait_freq_set_vdd(buf);
-}
-
 static struct freq_attr *msm_freq_attr[] = {
 	&cpufreq_freq_attr_scaling_available_freqs,
 	NULL,
@@ -392,8 +376,6 @@ static struct cpufreq_driver msm_cpufreq_driver = {
 	.get		= msm_cpufreq_get_freq,
 	.suspend	= msm_cpufreq_suspend,
 	.resume		= msm_cpufreq_resume,
-	.show_volt	= msm_cpufreq_show_volt,
-	.store_volt	= msm_cpufreq_store_volt,
 	.name		= "msm",
 	.attr		= msm_freq_attr,
 };
