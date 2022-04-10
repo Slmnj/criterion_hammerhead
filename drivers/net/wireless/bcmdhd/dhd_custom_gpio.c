@@ -513,7 +513,7 @@ const struct cntry_locales_custom translate_custom_table[] = {
 void get_customized_country_code(void *adapter, char *country_iso_code,
 				 wl_country_t *cspec, u32 flags)
 {
-#if 0 && (defined(CUSTOMER_HW2) && (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 39)))
+#if defined(CUSTOMER_HW2) && (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 39))
 
 	struct cntry_locales_custom *cloc_ptr;
 
@@ -550,5 +550,5 @@ void get_customized_country_code(void *adapter, char *country_iso_code,
 	memcpy(cspec->ccode, translate_custom_table[0].custom_locale, WLC_CNTRY_BUF_SZ);
 	cspec->rev = translate_custom_table[0].custom_locale_rev;
 	return;
-#endif /* 0 && (defined(CUSTOMER_HW2) && (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 36))) */
+#endif /* (defined(CUSTOMER_HW2) && (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 36))) */
 }
