@@ -1,86 +1,255 @@
 # bcmdhd
-#
-#
-#
-#
-#
+#####################
+# SDIO Basic feature
+#####################
 
-DHDCFLAGS = -Wall -Wstrict-prototypes -Dlinux -DBCMDRIVER               \
+DHDCFLAGS += -Wall -Wstrict-prototypes -Dlinux -DLINUX -DBCMDRIVER            \
 	-DBCMDONGLEHOST -DUNRELEASEDCHIP -DBCMDMA32 -DBCMFILEIMAGE            \
-	-DDHDTHREAD -DDHD_DEBUG -DSDTEST -DBDC                                \
-	-DDHD_BCMEVENTS -DSHOW_EVENTS -DPROP_TXSTATUS -DBCMDBG                \
-	-DCUSTOMER_HW2 -DOOB_INTR_ONLY -DHW_OOB                               \
-	-DMMC_SDIO_ABORT -DBCMSDIO -DBCMLXSDMMC -DBCMPLATFORM_BUS -DWLP2P     \
+	-DDHDTHREAD -DSHOW_EVENTS -DBCMDBG -DWLP2P                            \
 	-DWIFI_ACT_FRAME -DARP_OFFLOAD_SUPPORT                                \
-	-DKEEP_ALIVE -DGET_CUSTOM_MAC_ENABLE -DPKT_FILTER_SUPPORT             \
-	-DEMBEDDED_PLATFORM -DENABLE_INSMOD_NO_FW_LOAD -DPNO_SUPPORT          \
-	-DDHD_USE_IDLECOUNT -DSET_RANDOM_MAC_SOFTAP -DROAM_ENABLE -DVSDB      \
-	-DWL_CFG80211_VSDB_PRIORITIZE_SCAN_REQUEST -DENABLE_FW_ROAM_SUSPEND   \
-	-DESCAN_RESULT_PATCH -DSDIO_CRC_ERROR_FIX \
-	-DDHD_DONOT_FORWARD_BCMEVENT_AS_NETWORK_PKT -DRXFRAME_THREAD	        \
-	-DSUPPORT_PM2_ONLY -DWLTDLS     \
-	-DMIRACAST_AMPDU_SIZE=8		\
-	-Idrivers/net/wireless/bcmdhd	-Idrivers/net/wireless/bcmdhd/include   \
-	-Idrivers/net/wireless/bcmdhd/common/include
+	-DKEEP_ALIVE -DCSCAN -DPKT_FILTER_SUPPORT                             \
+	-DEMBEDDED_PLATFORM -DPNO_SUPPORT  -DSHOW_LOGTRACE                    \
+	-DDHD_DONOT_FORWARD_BCMEVENT_AS_NETWORK_PKT                           \
+	-DGET_CUSTOM_MAC_ENABLE
 
-DHDOFILES = aiutils.o bcmsdh_sdmmc_linux.o dhd_linux.o siutils.o bcmutils.o   \
-	dhd_linux_sched.o dhd_pno.o dhd_sdio.o bcmwifi_channels.o bcmevent.o hndpmu.o   \
-	bcmsdh.o dhd_cdc.o bcmsdh_linux.o dhd_common.o dhd_wlfc.o dhd_ip.o linux_osl.o \
-	bcmsdh_sdmmc.o dhd_custom_gpio.o sbutils.o wldev_common.o wl_android.o
+#################
+# Common feature
+#################
+DHDCFLAGS += -DCUSTOMER_HW2 -DCUSTOMER_HW5
+DHDCFLAGS += -DWL_CFG80211
+# Print out kernel panic point of file and line info when assertion happened
+DHDCFLAGS += -DBCMASSERT_LOG
 
-obj-$(CONFIG_BCMDHD) += bcmdhd.o
-bcmdhd-objs += $(DHDOFILES)
-ifneq ($(CONFIG_WIRELESS_EXT),)
-bcmdhd-objs += wl_iw.o
-DHDCFLAGS += -DSOFTAP -DWL_WIRELESS_EXT -DUSE_IW
-endif
-ifneq ($(CONFIG_CFG80211),)
-bcmdhd-objs += wl_cfg80211.o wl_cfgp2p.o wl_linux_mon.o dhd_cfg80211.o wl_cfgvendor.o
-DHDCFLAGS += -DWL_CFG80211 -DWL_CFG80211_STA_EVENT -DWL_ENABLE_P2P_IF
-DHDCFLAGS += -DWL_VENDOR_EXT_SUPPORT
-DHDCFLAGS += -DWL_IFACE_COMB_NUM_CHANNELS
+# keepalive
+DHDCFLAGS += -DCUSTOM_KEEP_ALIVE_SETTING=28000
+
+DHDCFLAGS += -DVSDB
+
+# For p2p connection issue
+DHDCFLAGS += -DWL_SCB_TIMEOUT=10
+
+# TDLS enable
+DHDCFLAGS += -DWLTDLS -DWLTDLS_AUTO_ENABLE
+# For TDLS tear down inactive time 40 sec
+DHDCFLAGS += -DCUSTOM_TDLS_IDLE_MODE_SETTING=40000
+# for TDLS RSSI HIGH for establishing TDLS link
+DHDCFLAGS += -DCUSTOM_TDLS_RSSI_THRESHOLD_HIGH=-60
+# for TDLS RSSI HIGH for tearing down TDLS link
+DHDCFLAGS += -DCUSTOM_TDLS_RSSI_THRESHOLD_LOW=-70
+
+# Roaming
+DHDCFLAGS += -DROAM_AP_ENV_DETECTION
+DHDCFLAGS += -DROAM_ENABLE -DROAM_CHANNEL_CACHE -DROAM_API
+DHDCFLAGS += -DENABLE_FW_ROAM_SUSPEND
+# Roaming trigger
 DHDCFLAGS += -DCUSTOM_ROAM_TRIGGER_SETTING=-75
 DHDCFLAGS += -DCUSTOM_ROAM_DELTA_SETTING=10
-DHDCFLAGS += -DCUSTOM_KEEP_ALIVE_SETTING=28000
+# Set PM 2 always regardless suspend/resume
+DHDCFLAGS += -DSUPPORT_PM2_ONLY
+
+# For special PNO Event keep wake lock for 10sec
 DHDCFLAGS += -DCUSTOM_PNO_EVENT_LOCK_xTIME=10
-endif
-ifneq ($(CONFIG_DHD_USE_SCHED_SCAN),)
-DHDCFLAGS += -DWL_SCHED_SCAN
-endif
-EXTRA_CFLAGS = $(DHDCFLAGS)
-ifeq ($(CONFIG_BCMDHD),m)
-EXTRA_LDFLAGS += --strip-debug
-endif
+DHDCFLAGS += -DMIRACAST_AMPDU_SIZE=8
+
+#PNO trigger
+#DHDCFLAGS += -DPNO_MIN_RSSI_TRIGGER=-75
 
 #Gscan
 DHDCFLAGS += -DGSCAN_SUPPORT
+DHDCFLAGS += -DWL_VENDOR_EXT_SUPPORT
 
-DHDCFLAGS += -DCUSTOM_TDLS_RSSI_THRESHOLD_HIGH=-60
-DHDCFLAGS += -DCUSTOM_TDLS_RSSI_THRESHOLD_LOW=-70
-DHDCFLAGS += -DCUSTOM_TDLS_IDLE_MODE_SETTING=40000
+#Link Statistics
+DHDCFLAGS += -DLINKSTAT_SUPPORT
 
-# debug info
-  DHDCFLAGS += -DDHD_WAKE_STATUS -DDHD_WAKE_RX_STATUS
-  DHDCFLAGS += -DDHD_WAKE_EVENT_STATUS
+# Early suspend
+DHDCFLAGS += -DDHD_USE_EARLYSUSPEND
+
+# For Scan result patch
+DHDCFLAGS += -DESCAN_RESULT_PATCH
+
+# For Static Buffer
+ifeq ($(CONFIG_DHD_USE_STATIC_BUF),y)
+  DHDCFLAGS += -DENHANCED_STATIC_BUF
+  DHDCFLAGS += -DSTATIC_WL_PRIV_STRUCT
+endif
+
+ifneq ($(CONFIG_DHD_USE_SCHED_SCAN),)
+DHDCFLAGS += -DWL_SCHED_SCAN
+endif
+
+ifeq ($(CONFIG_DHD_OF_SUPPORT),y)
+  DHDCFLAGS += -DDHD_OF_SUPPORT
+endif
+
+# Ioctl timeout 5000ms
+DHDCFLAGS += -DIOCTL_RESP_TIMEOUT=5000
+
+# Prevent rx thread monopolize
+DHDCFLAGS += -DWAIT_DEQUEUE
+
+# Config PM Control
+DHDCFLAGS += -DCONFIG_CONTROL_PM
+
+# idle count
+DHDCFLAGS += -DDHD_USE_IDLECOUNT
+
+# SKB TAILPAD to avoid out of boundary memory access
+DHDCFLAGS += -DDHDENABLE_TAILPAD
+
+# DTIM skip interval
+DHDCFLAGS += -DCUSTOM_SUSPEND_BCN_LI_DTIM=2 -DMAX_DTIM_ALLOWED_INTERVAL=600
+
+# Wi-Fi Direct
+DHDCFLAGS += -DWL_CFG80211_VSDB_PRIORITIZE_SCAN_REQUEST
+DHDCFLAGS += -DWL_CFG80211_STA_EVENT
+DHDCFLAGS += -DWL_IFACE_COMB_NUM_CHANNELS
+DHDCFLAGS += -DWL_ENABLE_P2P_IF
+
+DHDCFLAGS += -DWL_CFG80211_ACL
+DHDCFLAGS += -DDISABLE_11H_SOFTAP
+DHDCFLAGS += -DSET_RANDOM_MAC_SOFTAP
+DHDCFLAGS += -DCUSTOM_FORCE_NODFS_FLAG
+DHDCFLAGS += -DCUSTOM_SET_SHORT_DWELL_TIME
+
+##########################
+# driver type
+# m: module type driver
+# y: built-in type driver
+##########################
+DRIVER_TYPE ?= y
 
 #########################
 # Chip dependent feature
 #########################
-ifneq ($(CONFIG_BCM4339),)
-DHDCFLAGS += -DCUSTOM_GLOM_SETTING=8 -DCUSTOM_RXCHAIN=1
-DHDCFLAGS += -DUSE_DYNAMIC_F2_BLKSIZE -DDYNAMIC_F2_BLKSIZE_FOR_NONLEGACY=128
-DHDCFLAGS += -DBCMSDIOH_TXGLOM -DCUSTOM_TXGLOM=1 -DBCMSDIOH_TXGLOM_HIGHSPEED
-DHDCFLAGS += -DCUSTOM_SDIO_F2_BLKSIZE=512
-DHDCFLAGS += -DDHDTCPACK_SUPPRESS
-DHDCFLAGS += -DUSE_WL_TXBF
-DHDCFLAGS += -DUSE_WL_FRAMEBURST
-DHDCFLAGS += -DCUSTOM_AMPDU_BA_WSIZE=32
-DHDCFLAGS += -DPROP_TXSTATUS_VSDB
-DHDCFLAGS += -DCUSTOM_MAX_TXGLOM_SIZE=32
-DHDCFLAGS += -DREPEAT_READFRAME
-DHDCFLAGS += -DROAM_AP_ENV_DETECTION
-DHDCFLAGS += -DWL11U
-DHDCFLAGS += -DCUSTOM_DPC_PRIO_SETTING=0 -DCUSTOM_RXF_PRIO_SETTING=0
-else
-DHDCFLAGS += -DCUSTOM_SDIO_F2_BLKSIZE=128
+
+ifneq ($(filter y, $(CONFIG_BCM4339) $(CONFIG_BCM4354) $(CONFIG_BCM4356) $(CONFIG_BCM4358)),)
+  DHDCFLAGS += -DUSE_WL_TXBF
+  DHDCFLAGS += -DUSE_WL_FRAMEBURST
+  DHDCFLAGS += -DCUSTOM_DPC_CPUCORE=0
+  DHDCFLAGS += -DMAX_AP_CLIENT_CNT=10
+  DHDCFLAGS += -DMAX_GO_CLIENT_CNT=5
+
+# New Features
+  DHDCFLAGS += -DDHD_ENABLE_LPC
+  DHDCFLAGS += -DCUSTOM_COUNTRY_CODE
+ifneq ($(filter y, $(CONFIG_BCM4356) $(CONFIG_BCM4358)),)
+  DHDCFLAGS += -DWL11U
+  DHDCFLAGS += -DMFP
+#  DHDCFLAGS += -DRTT_SUPPORT -DRTT_DEBUG
+
+  DHDCFLAGS += -DDNGL_EVENT_SUPPORT
+  DHDCFLAGS += -DNDO_CONFIG_SUPPORT
 endif
+
+ifneq ($(CONFIG_BCM4354),)
+  DHDCFLAGS += -DSOMC_MIMO
+endif
+
+# bcn_timeout
+  DHDCFLAGS += -DCUSTOM_BCN_TIMEOUT_SETTING=5
+
+# debug info
+#  DHDCFLAGS += -DDHD_WAKE_STATUS -DDHD_WAKE_RX_STATUS
+#  DHDCFLAGS += -DDHD_WAKE_EVENT_STATUS
+
+# Android Packet Filter
+  DHDCFLAGS += -DAPF
+
+ifneq ($(CONFIG_BCMDHD_SDIO),)
+  DHDCFLAGS += -DBDC -DOOB_INTR_ONLY -DHW_OOB -DDHD_BCMEVENTS -DMMC_SDIO_ABORT
+  DHDCFLAGS += -DBCMSDIO -DBCMLXSDMMC -DUSE_SDIOFIFO_IOVAR
+  DHDCFLAGS += -DPROP_TXSTATUS
+  DHDCFLAGS += -DCUSTOM_AMPDU_MPDU=16
+  DHDCFLAGS += -DCUSTOM_AMPDU_BA_WSIZE=64
+# tput enhancement
+  DHDCFLAGS += -DCUSTOM_GLOM_SETTING=8 -DCUSTOM_RXCHAIN=1
+  DHDCFLAGS += -DUSE_DYNAMIC_F2_BLKSIZE -DDYNAMIC_F2_BLKSIZE_FOR_NONLEGACY=128
+  DHDCFLAGS += -DBCMSDIOH_TXGLOM -DCUSTOM_TXGLOM=1 -DBCMSDIOH_TXGLOM_HIGHSPEED
+  DHDCFLAGS += -DDHDTCPACK_SUPPRESS
+  DHDCFLAGS += -DRXFRAME_THREAD
+  DHDCFLAGS += -DREPEAT_READFRAME
+  DHDCFLAGS += -DCUSTOM_MAX_TXGLOM_SIZE=40
+  DHDCFLAGS += -DMAX_HDR_READ=128
+  DHDCFLAGS += -DDHD_FIRSTREAD=128
+
+  DHDCFLAGS += -DWLFC_STATE_PREALLOC
+endif
+
+ifneq ($(CONFIG_BCMDHD_PCIE),)
+  DHDCFLAGS += -DPCIE_FULL_DONGLE -DBCMPCIE -DCUSTOM_DPC_PRIO_SETTING=-1
+# tput enhancement
+  DHDCFLAGS += -DCUSTOM_AMPDU_BA_WSIZE=64
+  DHDCFLAGS += -DCUSTOM_AMPDU_MPDU=32
+  DHDCFLAGS += -DCUSTOM_AMPDU_RELEASE=16
+  DHDCFLAGS += -DPROP_TXSTATUS_VSDB
+# Disable watchdog thread
+  DHDCFLAGS += -DCUSTOM_DHD_WATCHDOG_MS=0
+
+  DHDCFLAGS += -DMAX_CNTL_TX_TIMEOUT=1
+  DHDCFLAGS += -DMSM_PCIE_LINKDOWN_RECOVERY
+ifeq ($(CONFIG_DHD_USE_STATIC_BUF),y)
+  # Use preallocated IOCTL and EVENT buffer
+  DHDCFLAGS += -DDHD_USE_STATIC_CTRLBUF
+endif
+
+  DHDCFLAGS += -DDONGLE_ENABLE_ISOLATION
+
+# Debugability - Packet logging
+  DHDCFLAGS += -DDBG_PKT_MON
+endif
+
+# Print 802.1X packets
+  DHDCFLAGS += -DDHD_8021X_DUMP
+# prioritize 802.1x packet
+  DHDCFLAGS += -DEAPOL_PKT_PRIO
+# Print DHCP packets
+#  DHDCFLAGS += -DDHD_DHCP_DUMP
+endif
+
+
+#EXTRA_LDFLAGS += --strip-debug
+
+ifeq ($(DRIVER_TYPE),y)
+  DHDCFLAGS += -DENABLE_INSMOD_NO_FW_LOAD
+  DHDCFLAGS += -DUSE_LATE_INITCALL_SYNC
+endif
+
+EXTRA_CFLAGS += $(DHDCFLAGS) -DDHD_DEBUG
+EXTRA_CFLAGS += -DSRCBASE=\"$(src)\"
+EXTRA_CFLAGS += -I$(src)/include/ -I$(src)/
+KBUILD_CFLAGS += -I$(LINUXDIR)/include -I$(shell pwd)
+
+DHDOFILES := dhd_pno.o dhd_common.o dhd_ip.o dhd_custom_gpio.o \
+	dhd_linux.o dhd_linux_sched.o dhd_cfg80211.o dhd_linux_wq.o aiutils.o bcmevent.o \
+	bcmutils.o bcmwifi_channels.o hndpmu.o linux_osl.o sbutils.o siutils.o \
+	wl_android.o wl_roam.o wl_cfg80211.o wl_cfgp2p.o wl_cfg_btcoex.o wldev_common.o wl_linux_mon.o  \
+	dhd_linux_platdev.o dhd_pno.o dhd_rtt.o dhd_linux_wq.o wl_cfg_btcoex.o \
+	hnd_pktq.o hnd_pktpool.o wl_cfgvendor.o bcmxtlv.o dhd_debug.o dhd_debug_linux.o
+ifneq ($(CONFIG_DHD_OF_SUPPORT),)
+  DHDOFILES += dhd_custom_platdev.o
+endif
+
+ifneq ($(CONFIG_BCMDHD_SDIO),)
+  DHDOFILES += bcmsdh.o bcmsdh_linux.o bcmsdh_sdmmc.o bcmsdh_sdmmc_linux.o
+  DHDOFILES += dhd_cdc.o dhd_wlfc.o dhd_sdio.o
+endif
+
+ifneq ($(CONFIG_BCMDHD_PCIE),)
+  DHDOFILES += dhd_pcie.o dhd_pcie_linux.o dhd_msgbuf.o dhd_flowring.o
+  DHDOFILES += pcie_core.o
+endif
+
+bcmdhd-objs := $(DHDOFILES)
+obj-$(DRIVER_TYPE)   += bcmdhd.o
+
+all:
+	@echo "$(MAKE) --no-print-directory -C $(KDIR) SUBDIRS=$(CURDIR) modules"
+	@$(MAKE) --no-print-directory -C $(KDIR) SUBDIRS=$(CURDIR) modules
+
+clean:
+	rm -rf *.o *.ko *.mod.c *~ .*.cmd *.o.cmd .*.o.cmd \
+	Module.symvers modules.order .tmp_versions modules.builtin
+
+install:
+	@$(MAKE) --no-print-directory -C $(KDIR) \
+		SUBDIRS=$(CURDIR) modules_install

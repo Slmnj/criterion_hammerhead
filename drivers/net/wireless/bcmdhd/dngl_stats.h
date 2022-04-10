@@ -2,7 +2,7 @@
  * Common stats definitions for clients of dongle
  * ports
  *
- * Copyright (C) 1999-2013, Broadcom Corporation
+ * Copyright (C) 1999-2014, Broadcom Corporation
  * 
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -22,7 +22,7 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: dngl_stats.h 241182 2011-02-17 21:50:03Z $
+ * $Id: dngl_stats.h 464743 2014-03-25 21:04:32Z $
  */
 
 #ifndef _dngl_stats_h_
@@ -44,16 +44,16 @@ typedef int wifi_radio;
 typedef int wifi_channel;
 typedef int wifi_rssi;
 
-/* channel operating width */
-typedef enum {
-   WIFI_CHAN_WIDTH_20    = 0,
-   WIFI_CHAN_WIDTH_40    = 1,
-   WIFI_CHAN_WIDTH_80    = 2,
-   WIFI_CHAN_WIDTH_160   = 3,
-   WIFI_CHAN_WIDTH_80P80 = 4,
-   WIFI_CHAN_WIDTH_5     = 5,
-   WIFI_CHAN_WIDTH_10    = 6,
-} wifi_channel_width;
+typedef enum wifi_channel_width {
+	WIFI_CHAN_WIDTH_20	  = 0,
+	WIFI_CHAN_WIDTH_40	  = 1,
+	WIFI_CHAN_WIDTH_80	  = 2,
+	WIFI_CHAN_WIDTH_160   = 3,
+	WIFI_CHAN_WIDTH_80P80 = 4,
+	WIFI_CHAN_WIDTH_5	  = 5,
+	WIFI_CHAN_WIDTH_10	  = 6,
+	WIFI_CHAN_WIDTH_INVALID = -1
+} wifi_channel_width_t;
 
 typedef enum {
     WIFI_DISCONNECTED = 0,
@@ -102,7 +102,7 @@ typedef wifi_interface_info *wifi_interface_handle;
 
 /* channel information */
 typedef struct {
-   wifi_channel_width width;   // channel width (20, 40, 80, 80+80, 160)
+   wifi_channel_width_t width;   // channel width (20, 40, 80, 80+80, 160)
    wifi_channel center_freq;   // primary 20 MHz channel
    wifi_channel center_freq0;  // center frequency (MHz) first segment
    wifi_channel center_freq1;  // center frequency (MHz) second segment
