@@ -2170,15 +2170,16 @@ static int wl_cfgvendor_lstats_get_info(struct wiphy *wiphy,
 	err = wldev_iovar_getbuf(bcmcfg_to_prmry_ndev(cfg), "ratestat", NULL, 0,
 		iovar_buf, WLC_IOCTL_MAXLEN, NULL);
 	if (unlikely(err)) {
-		WL_ERR(("error (%d) - size = %zu\n", err, NUM_RATE*sizeof(wifi_rate_stat)));
-		return err;
+		iface->num_peers = 0;
+		iface->peer_info->num_rate = 0;
+	} else {
+		memcpy(output, iovar_buf, NUM_RATE*sizeof(wifi_rate_stat));
 	}
-	memcpy(output, iovar_buf, NUM_RATE*sizeof(wifi_rate_stat));
 
 	err =  wl_cfgvendor_send_cmd_reply(wiphy, bcmcfg_to_prmry_ndev(cfg),
 		cfg->ioctl_buf, sizeof(wifi_radio_stat)+NUM_CHAN*sizeof(wifi_channel_stat)+
-		sizeof(wifi_iface_stat)+NUM_PEER*sizeof(wifi_peer_info)+
-		NUM_RATE*sizeof(wifi_rate_stat));
+		sizeof(wifi_iface_stat)+iface->num_peers*sizeof(wifi_peer_info)+
+		iface->peer_info->num_rate*sizeof(wifi_rate_stat));
 	if (unlikely(err))
 		WL_ERR(("Vendor Command reply failed ret:%d \n", err));
 
