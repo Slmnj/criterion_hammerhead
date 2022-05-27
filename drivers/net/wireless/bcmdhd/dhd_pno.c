@@ -96,8 +96,6 @@
 	((EVENT_DATABUF_MAXLEN - sizeof(wl_pfn_scanresults_t)) \
 	/ sizeof(wl_pfn_net_info_t) + 1)
 
-static wlc_ssid_ext_t * dhd_pno_get_legacy_pno_ssid(dhd_pub_t *dhd,
-	dhd_pno_status_info_t *pno_state);
 #ifdef GSCAN_SUPPORT
 static int _dhd_pno_flush_ssid(dhd_pub_t *dhd);
 static wl_pfn_gscan_ch_bucket_cfg_t *
