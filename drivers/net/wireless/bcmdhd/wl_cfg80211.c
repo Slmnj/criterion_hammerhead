@@ -4195,7 +4195,9 @@ wl_cfg80211_disconnect(struct wiphy *wiphy, struct net_device *dev,
 	bool act = false;
 	s32 err = 0;
 	u8 *curbssid;
+#if defined(DBG_PKT_MON) || defined(CUSTOM_SET_CPUCORE)
 	dhd_pub_t *dhdp = (dhd_pub_t *)(cfg->pub);
+#endif
 	WL_ERR(("Reason %d\n", reason_code));
 	RETURN_EIO_IF_NOT_UP(cfg);
 	act = *(bool *) wl_read_prof(cfg, dev, WL_PROF_ACT);
