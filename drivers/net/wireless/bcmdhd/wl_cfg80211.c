@@ -7502,10 +7502,14 @@ wl_cfg80211_sched_scan_start(struct wiphy *wiphy,
 				ssids_local[ssid_cnt].hidden = FALSE;
 				WL_PNO((">>> PNO non-hidden SSID (%s) \n", ssid->ssid));
 			}
+#ifdef PNO_MIN_RSSI_TRIGGER
+			ssids_local[ssid_cnt].rssi_thresh = PNO_MIN_RSSI_TRIGGER;
+#else
 			if (request->match_sets[i].rssi_thold != NL80211_SCAN_RSSI_THOLD_OFF) {
 				ssids_local[ssid_cnt].rssi_thresh =
 				      (int8)request->match_sets[i].rssi_thold;
 			}
+#endif
 			ssid_cnt++;
 		}
 	}
