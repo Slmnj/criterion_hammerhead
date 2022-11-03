@@ -104,3 +104,7 @@ config MSM_KGSL_SIMPLE_GOV
 	---help---
 	  A simple KGSL GPU govenor for Qualcom Adreno XXX devices
 
+config MSM_KGSL_SIMPLE_GOV_DEFAULT
+        bool "Use Simple KGSL GPU govenor for Qualcomm Adreno xxx devices as default"
+        default n
+        depends on MSM_KGSL_SIMPLE_GOV
