@@ -3068,4 +3068,11 @@ config WALL_CLK_SYSFS
 	 Support the wallclk directory in sysfs filesystem to enable the
 	 wall clock simulation and read the current SFN.
 
+config AUTOSMP
+	bool "AutoSMP Hotplug"
+	depends on SMP && HOTPLUG_CPU
+	help
+	  Automatically hotplugs the multiple CPU cores based on
+	  CPU load and suspend state.
+
 endif
