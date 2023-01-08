@@ -44,9 +44,9 @@ static struct thermal_info {
 
 enum thermal_freqs {
 	FREQ_HELL		= 729600,
-	FREQ_VERY_HOT		= 1036800,
-	FREQ_HOT		= 1267200,
-	FREQ_WARM		= 1497600,
+	FREQ_VERY_HOT		= 1190400,
+	FREQ_HOT		= 1497600,
+	FREQ_WARM		= 1728000,
 };
 
 enum threshold_levels {
@@ -57,7 +57,6 @@ enum threshold_levels {
 
 static struct msm_thermal_data msm_thermal_info;
 static struct delayed_work check_temp_work;
-static struct workqueue_struct *thermal_wq;
 
 static int msm_thermal_cpufreq_callback(struct notifier_block *nfb,
 		unsigned long event, void *data)
@@ -132,7 +131,7 @@ static void check_temp(struct work_struct *work)
 	}
 
 reschedule:
-	queue_delayed_work(thermal_wq, &check_temp_work, msecs_to_jiffies(250));
+	schedule_delayed_work_on(0, &check_temp_work, msecs_to_jiffies(250));
 }
 
 static int __devinit msm_thermal_dev_probe(struct platform_device *pdev)
@@ -149,30 +148,20 @@ static int __devinit msm_thermal_dev_probe(struct platform_device *pdev)
 
 	WARN_ON(data.sensor_id >= TSENS_MAX_SENSORS);
 
-        memcpy(&msm_thermal_info, &data, sizeof(struct msm_thermal_data));
-
-	ret = cpufreq_register_notifier(&msm_thermal_cpufreq_notifier,
-		CPUFREQ_POLICY_NOTIFIER);
-	if (ret)
-		pr_err("thermals: well, if this fails here, we're fucked\n");
-
-	thermal_wq = alloc_workqueue("thermal_wq", WQ_HIGHPRI, 0);
-	if (!thermal_wq) {
-		pr_err("thermals: don't worry, if this fails we're also bananas\n");
-		goto err;
-	}
+	memcpy(&msm_thermal_info, &data, sizeof(struct msm_thermal_data));
 
 	INIT_DELAYED_WORK(&check_temp_work, check_temp);
-	queue_delayed_work(thermal_wq, &check_temp_work, 5);
+	schedule_delayed_work_on(0, &check_temp_work, 5);
 
-err:
+	cpufreq_register_notifier(&msm_thermal_cpufreq_notifier,
+			CPUFREQ_POLICY_NOTIFIER);
+
 	return ret;
 }
 
 static int msm_thermal_dev_remove(struct platform_device *pdev)
 {
 	cancel_delayed_work_sync(&check_temp_work);
-	destroy_workqueue(thermal_wq);
 	cpufreq_unregister_notifier(&msm_thermal_cpufreq_notifier,
                         CPUFREQ_POLICY_NOTIFIER);
 	return 0;
