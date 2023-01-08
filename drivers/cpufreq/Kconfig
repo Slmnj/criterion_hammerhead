@@ -125,6 +125,11 @@ config CPU_FREQ_DEFAULT_GOV_INTELLIACTIVE
 	  loading your cpufreq low-level hardware driver, using the
 	  'interactive' governor for latency-sensitive workloads.
 
+config CPU_FREQ_DEFAULT_GOV_ALUCARD
+  	bool "alucard"
+  	select CPU_FREQ_GOV_ALUCARD
+  	help
+
 config CPU_FREQ_DEFAULT_GOV_BLU_ACTIVE
 	bool "blu_active"
 	select CPU_FREQ_GOV_BLU_ACTIVE
@@ -271,6 +276,10 @@ config CPU_FREQ_GOV_INTELLIACTIVE
 	  For details, take a look at linux/Documentation/cpu-freq.
 
 	  If in doubt, say N.
+
+config CPU_FREQ_GOV_ALUCARD
+	tristate "'alucard' cpufreq governor"
+	depends on CPU_FREQ
 
 config CPU_FREQ_GOV_BLU_ACTIVE
 	tristate "'blu_active' cpufreq policy governor"
