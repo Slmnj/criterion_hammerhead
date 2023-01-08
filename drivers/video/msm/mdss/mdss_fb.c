@@ -255,31 +255,21 @@ static ssize_t mdss_fb_get_split(struct device *dev,
 	return ret;
 }
 
-static int pcc_r = 32768, pcc_g = 32768, pcc_b = 32768;
 static ssize_t mdss_get_rgb(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d %d %d\n", pcc_r, pcc_g, pcc_b);
+	struct kcal_lut_data lut_data = kcal_ext_show_values();
+
+	return sprintf(buf, "%d %d %d\n", lut_data.red * 128,
+						 lut_data.green * 128,
+						 lut_data.blue * 128);
 }
 
-/**
- * simple color temperature interface using polynomial color correction
- *
- * input values are r/g/b adjustments from 0-32768 representing 0 -> 1
- *
- * example adjustment @ 3500K:
- * 1.0000 / 0.5515 / 0.2520 = 32768 / 25828 / 17347
- *
- * reference chart:
- * http://www.vendian.org/mncharity/dir3/blackbody/UnstableURLs/bbr_color.html
- */
 static ssize_t mdss_set_rgb(struct device *dev,
 	struct device_attribute *attr,
 	const char *buf, size_t count)
 {
 	uint32_t r = 0, g = 0, b = 0;
-	struct mdp_pcc_cfg_data pcc_cfg;
-	u32 copyback = 0;
 
 	if (count > 19)
 		return -EINVAL;
@@ -293,28 +283,9 @@ static ssize_t mdss_set_rgb(struct device *dev,
 	if (b < 0 || b > 32768)
 		return -EINVAL;
 
-	pr_info("%s: r=%d g=%d b=%d\n", __func__, r, g, b);
+	kcal_ext_apply_values(r, g, b);
 
-	memset(&pcc_cfg, 0, sizeof(struct mdp_pcc_cfg_data));
-
-	pcc_cfg.block = MDP_LOGICAL_BLOCK_DISP_0;
-	if (r == 32768 && g == 32768 && b == 32768)
-		pcc_cfg.ops = MDP_PP_OPS_DISABLE;
-	else
-		pcc_cfg.ops = MDP_PP_OPS_ENABLE;
-	pcc_cfg.ops |= MDP_PP_OPS_WRITE;
-	pcc_cfg.r.r = r;
-	pcc_cfg.g.g = g;
-	pcc_cfg.b.b = b;
-
-	if (mdss_mdp_pcc_config(&pcc_cfg, &copyback) == 0) {
-		pcc_r = r;
-		pcc_g = g;
-		pcc_b = b;
-		return count;
-	}
-
-	return -EINVAL;
+	return count;
 }
 
 static DEVICE_ATTR(msm_fb_type, S_IRUGO, mdss_fb_get_type, NULL);
