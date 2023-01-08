@@ -683,7 +683,7 @@ int bcmsdh_register_oob_intr(void * dhdp)
 		if (error)
 			return -ENODEV;
 
-			error = enable_irq_wake(sdhcinfo->oob_irq);
+		error = enable_irq_wake(sdhcinfo->oob_irq);
 		if (error)
 			SDLX_MSG(("%s enable_irq_wake error=%d \n", __FUNCTION__, error));
 		sdhcinfo->oob_irq_registered = TRUE;
