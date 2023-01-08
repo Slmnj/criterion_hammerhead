@@ -439,3 +439,4 @@ obj-$(CONFIG_WALL_CLK_SYSFS) += wallclk_sysfs.o
 obj-y += fastchg.o
 
 obj-$(CONFIG_AUTOSMP) += autosmp.o
+obj-$(CONFIG_MSM_HOTPLUG) += msm_hotplug.o
