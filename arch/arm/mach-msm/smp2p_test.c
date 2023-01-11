@@ -64,19 +64,19 @@ static void smp2p_ut_local_basic(struct seq_file *s)
 		/* simulate response from remote side */
 		rmp->remote_item.header.magic = SMP2P_MAGIC;
 		SMP2P_SET_LOCAL_PID(
-		rmp->remote_item.header.rem_loc_proc_id,
-					SMP2P_REMOTE_MOCK_PROC);
+		&rmp->remote_item.header, rem_loc_proc_id,
+						SMP2P_REMOTE_MOCK_PROC);
 		SMP2P_SET_REMOTE_PID(
-		rmp->remote_item.header.rem_loc_proc_id,
-					SMP2P_APPS_PROC);
+		&rmp->remote_item.header, rem_loc_proc_id,
+						SMP2P_APPS_PROC);
 		SMP2P_SET_VERSION(
-		rmp->remote_item.header.feature_version, 1);
+		&rmp->remote_item.header, feature_version, 1);
 		SMP2P_SET_FEATURES(
-		rmp->remote_item.header.feature_version, 0);
+		&rmp->remote_item.header, feature_version, 0);
 		SMP2P_SET_ENT_TOTAL(
-		rmp->remote_item.header.valid_total_ent, SMP2P_MAX_ENTRY);
+		&rmp->remote_item.header, valid_total_ent, SMP2P_MAX_ENTRY);
 		SMP2P_SET_ENT_VALID(
-		rmp->remote_item.header.valid_total_ent, 0);
+		&rmp->remote_item.header, valid_total_ent, 0);
 		rmp->remote_item.header.reserved = 0x0;
 		msm_smp2p_set_remote_mock_exists(true);
 		rmp->tx_interrupt();
@@ -147,20 +147,19 @@ static void smp2p_ut_local_late_open(struct seq_file *s)
 			sizeof(struct smp2p_smem_item));
 		rmp->remote_item.header.magic = SMP2P_MAGIC;
 		SMP2P_SET_LOCAL_PID(
-		rmp->remote_item.header.rem_loc_proc_id,
+		&rmp->remote_item.header, rem_loc_proc_id,
 						SMP2P_REMOTE_MOCK_PROC);
 		SMP2P_SET_REMOTE_PID(
-		rmp->remote_item.header.rem_loc_proc_id,
+		&rmp->remote_item.header, rem_loc_proc_id,
 						SMP2P_APPS_PROC);
 		SMP2P_SET_VERSION(
-			rmp->remote_item.header.feature_version, 1);
+		&rmp->remote_item.header, feature_version, 1);
 		SMP2P_SET_FEATURES(
-			rmp->remote_item.header.feature_version, 0);
+		&rmp->remote_item.header, feature_version, 0);
 		SMP2P_SET_ENT_TOTAL(
-			rmp->remote_item.header.valid_total_ent,
-			SMP2P_MAX_ENTRY);
+		&rmp->remote_item.header, valid_total_ent, SMP2P_MAX_ENTRY);
 		SMP2P_SET_ENT_VALID(
-		rmp->remote_item.header.valid_total_ent, 0);
+		&rmp->remote_item.header, valid_total_ent, 0);
 		rmp->remote_item.header.reserved = 0x0;
 
 		msm_smp2p_set_remote_mock_exists(true);
@@ -238,19 +237,19 @@ static void smp2p_ut_local_early_open(struct seq_file *s)
 			sizeof(struct smp2p_smem_item));
 		rmp->remote_item.header.magic = SMP2P_MAGIC;
 		SMP2P_SET_LOCAL_PID(
-		rmp->remote_item.header.rem_loc_proc_id,
+		&rmp->remote_item.header, rem_loc_proc_id,
 						SMP2P_REMOTE_MOCK_PROC);
 		SMP2P_SET_REMOTE_PID(
-		rmp->remote_item.header.rem_loc_proc_id,
+		&rmp->remote_item.header, rem_loc_proc_id,
 						SMP2P_APPS_PROC);
 		SMP2P_SET_VERSION(
-		rmp->remote_item.header.feature_version, 1);
+		&rmp->remote_item.header, feature_version, 1);
 		SMP2P_SET_FEATURES(
-		rmp->remote_item.header.feature_version, 0);
+		&rmp->remote_item.header, feature_version, 0);
 		SMP2P_SET_ENT_TOTAL(
-		rmp->remote_item.header.valid_total_ent, SMP2P_MAX_ENTRY);
+		&rmp->remote_item.header, valid_total_ent, SMP2P_MAX_ENTRY);
 		SMP2P_SET_ENT_VALID(
-		rmp->remote_item.header.valid_total_ent, 0);
+		&rmp->remote_item.header, valid_total_ent, 0);
 		rmp->remote_item.header.reserved = 0x0;
 
 		msm_smp2p_set_remote_mock_exists(false);
@@ -275,7 +274,7 @@ static void smp2p_ut_local_early_open(struct seq_file *s)
 		UT_ASSERT_PTR(outbound_item, !=, NULL);
 		UT_ASSERT_INT(negotiation_state, ==, SMP2P_EDGE_STATE_OPENING);
 		UT_ASSERT_INT(0, ==,
-			SMP2P_GET_ENT_VALID(outbound_item->valid_total_ent));
+			SMP2P_GET_ENT_VALID(outbound_item, valid_total_ent));
 
 		/* verify that read/write don't work yet */
 		rmp->rx_interrupt_count = 0;
@@ -356,19 +355,19 @@ static void smp2p_ut_mock_loopback(struct seq_file *s)
 			sizeof(struct smp2p_smem_item));
 		rmp->remote_item.header.magic = SMP2P_MAGIC;
 		SMP2P_SET_LOCAL_PID(
-		rmp->remote_item.header.rem_loc_proc_id,
+		&rmp->remote_item.header, rem_loc_proc_id,
 						SMP2P_REMOTE_MOCK_PROC);
 		SMP2P_SET_REMOTE_PID(
-		rmp->remote_item.header.rem_loc_proc_id,
+		&rmp->remote_item.header, rem_loc_proc_id,
 						SMP2P_APPS_PROC);
 		SMP2P_SET_VERSION(
-		rmp->remote_item.header.feature_version, 1);
+		&rmp->remote_item.header, feature_version, 1);
 		SMP2P_SET_FEATURES(
-		rmp->remote_item.header.feature_version, 0);
+		&rmp->remote_item.header, feature_version, 0);
 		SMP2P_SET_ENT_TOTAL(
-		rmp->remote_item.header.valid_total_ent, SMP2P_MAX_ENTRY);
+		&rmp->remote_item.header, valid_total_ent, SMP2P_MAX_ENTRY);
 		SMP2P_SET_ENT_VALID(
-		rmp->remote_item.header.valid_total_ent, 1);
+		&rmp->remote_item.header, valid_total_ent, 1);
 		rmp->remote_item.header.reserved = 0x0;
 		msm_smp2p_set_remote_mock_exists(true);
 
@@ -781,19 +780,19 @@ static void smp2p_ut_local_in_max_entries(struct seq_file *s)
 			sizeof(struct smp2p_smem_item));
 		rmp->remote_item.header.magic = SMP2P_MAGIC;
 		SMP2P_SET_LOCAL_PID(
-		rmp->remote_item.header.rem_loc_proc_id,
+		&rmp->remote_item.header, rem_loc_proc_id,
 						SMP2P_REMOTE_MOCK_PROC);
 		SMP2P_SET_REMOTE_PID(
-		rmp->remote_item.header.rem_loc_proc_id,
+		&rmp->remote_item.header, rem_loc_proc_id,
 						SMP2P_APPS_PROC);
 		SMP2P_SET_VERSION(
-		rmp->remote_item.header.feature_version, 1);
+		&rmp->remote_item.header, feature_version, 1);
 		SMP2P_SET_FEATURES(
-		rmp->remote_item.header.feature_version, 0);
+		&rmp->remote_item.header, feature_version, 0);
 		SMP2P_SET_ENT_TOTAL(
-		rmp->remote_item.header.valid_total_ent, SMP2P_MAX_ENTRY);
+		&rmp->remote_item.header, valid_total_ent, SMP2P_MAX_ENTRY);
 		SMP2P_SET_ENT_VALID(
-		rmp->remote_item.header.valid_total_ent, 0);
+		&rmp->remote_item.header, valid_total_ent, 0);
 		rmp->remote_item.header.reserved = 0x0;
 		msm_smp2p_set_remote_mock_exists(true);
 
@@ -879,19 +878,19 @@ static void smp2p_ut_local_in_multiple(struct seq_file *s)
 			sizeof(struct smp2p_smem_item));
 		rmp->remote_item.header.magic = SMP2P_MAGIC;
 		SMP2P_SET_LOCAL_PID(
-		rmp->remote_item.header.rem_loc_proc_id,
+		&rmp->remote_item.header, rem_loc_proc_id,
 						SMP2P_REMOTE_MOCK_PROC);
 		SMP2P_SET_REMOTE_PID(
-		rmp->remote_item.header.rem_loc_proc_id,
+		&rmp->remote_item.header, rem_loc_proc_id,
 						SMP2P_APPS_PROC);
 		SMP2P_SET_VERSION(
-		rmp->remote_item.header.feature_version, 1);
+		&rmp->remote_item.header, feature_version, 1);
 		SMP2P_SET_FEATURES(
-		rmp->remote_item.header.feature_version, 0);
+		&rmp->remote_item.header, feature_version, 0);
 		SMP2P_SET_ENT_TOTAL(
-		rmp->remote_item.header.valid_total_ent, 1);
+		&rmp->remote_item.header, valid_total_ent, 1);
 		SMP2P_SET_ENT_VALID(
-		rmp->remote_item.header.valid_total_ent, 0);
+		&rmp->remote_item.header, valid_total_ent, 0);
 		rmp->remote_item.header.reserved = 0x0;
 		msm_smp2p_set_remote_mock_exists(true);
 
