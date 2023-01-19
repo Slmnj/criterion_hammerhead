@@ -31,9 +31,9 @@ struct msm_pm_boot_platform_data {
 };
 
 #ifdef CONFIG_PM
-int __init msm_pm_boot_init(struct msm_pm_boot_platform_data *pdata);
+int __devinit msm_pm_boot_init(struct msm_pm_boot_platform_data *pdata);
 #else
-static inline int __init msm_pm_boot_init(
+static inline int __devinit msm_pm_boot_init(
 		struct msm_pm_boot_platform_data *pdata)
 {
 	return 0;
